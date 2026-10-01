@@ -1,0 +1,21 @@
+// Libellés de constants/status.js (statuts, types, rôles, modes de paiement, actions d'audit)
+export default {
+  'status|En attente': 'Pending', 'status|Confirmée': 'Confirmed', 'status|Arrivée': 'Checked in', 'status|Parti': 'Checked out', 'status|Annulée': 'Cancelled', 'status|No-show': 'No-show',
+  'status|Non payé': 'Unpaid', 'status|Avance reçue': 'Deposit received', 'status|Partiellement payé': 'Partially paid', 'status|Payé': 'Paid', 'status|Remboursé': 'Refunded',
+  'status|Disponible': 'Available', 'status|Réservée': 'Reserved', 'status|Occupée': 'Occupied', 'status|En nettoyage': 'Being cleaned', 'status|Propre': 'Clean', 'status|Maintenance': 'Maintenance', 'status|Bloquée': 'Blocked',
+  'status|Réussi': 'Successful', 'status|Échoué': 'Failed', 'status|Annulé': 'Voided',
+  'status|Brouillon': 'Draft', 'status|Émise': 'Issued', 'status|Envoyée': 'Sent', 'status|Partiellement payée': 'Partially paid', 'status|Payée': 'Paid', 'status|En retard': 'Overdue',
+  'status|À faire': 'To do', 'status|En cours': 'In progress', 'status|Terminée': 'Completed', 'status|Ignorée': 'Skipped',
+  'status|Nettoyage': 'Cleaning', 'status|Nettoyage approfondi': 'Deep cleaning', 'status|Inspection': 'Inspection',
+  'status|Basse': 'Low', 'status|Normale': 'Normal', 'status|Haute': 'High', 'status|Urgente': 'Urgent',
+  'status|Particulier': 'Individual', 'status|Entreprise': 'Company', 'status|Agence': 'Agency', 'status|ONG / Projet': 'NGO / Project', 'status|Diaspora': 'Diaspora', 'status|Touriste': 'Tourist', 'status|Local': 'Local', 'status|Autre': 'Other',
+  'status|Carte d\'identité': 'ID card', 'status|Passeport': 'Passport', 'status|Permis de conduire': "Driver's licence",
+  'status|Administrateur': 'Administrator', 'status|Manager': 'Manager', 'status|Réception': 'Front desk', 'status|Ménage': 'Housekeeping',
+  'status|Espèces': 'Cash', 'status|Wave': 'Wave', 'status|Orange Money': 'Orange Money', 'status|Free Money': 'Free Money', 'status|Mobile money': 'Mobile money',
+  'status|Carte bancaire': 'Credit card', 'status|Carte de débit': 'Debit card', 'status|Virement': 'Bank transfer', 'status|Chèque': 'Cheque', 'status|OTA': 'OTA',
+  'status|Connexion': 'Login', 'status|Déconnexion': 'Logout', 'status|Création': 'Creation', 'status|Modification': 'Update', 'status|Suppression': 'Deletion', 'status|Check-in': 'Check-in', 'status|Check-out': 'Check-out',
+  'status|Annulation': 'Cancellation', 'status|Changement de chambre': 'Room change', 'status|Paiement': 'Payment', 'status|Remboursement': 'Refund', 'status|Annulation paiement': 'Payment voiding',
+  'status|Export': 'Export', 'status|Clôture caisse': 'Cash register closing', 'status|Réouverture caisse': 'Cash register reopening', 'status|Changement de statut': 'Status change',
+  'status|OTA (Booking, Airbnb…)': 'OTA (Booking, Airbnb…)', 'status|Appel direct': 'Direct call', 'status|Site web': 'Website',
+  'status|Appartement': 'Apartment', 'status|Dortoir': 'Dormitory',
+};

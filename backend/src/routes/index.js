@@ -1,0 +1,40 @@
+const express = require('express');
+const router = express.Router();
+
+const authRoutes = require('./authRoutes');
+const clientRoutes = require('./clientRoutes');
+const reservationRoutes = require('./reservationRoutes');
+const paymentRoutes = require('./paymentRoutes');
+const roomRoutes = require('./roomRoutes');
+const invoiceRoutes = require('./invoiceRoutes');
+const housekeepingRoutes = require('./housekeepingRoutes');
+const roomTypeRoutes = require('./roomTypeRoutes');
+const paymentModeRoutes = require('./paymentModeRoutes');
+const reservationSourceRoutes = require('./reservationSourceRoutes');
+const documentRoutes = require('./documentRoutes');
+const historyLogRoutes = require('./historyLogRoutes');
+const dashboardRoutes = require('./dashboardRoutes');
+const settingsRoutes = require('./settingsRoutes');
+const cashRoutes = require('./cashRoutes');
+const reportRoutes = require('./reportRoutes');
+const uploadRoutes = require('./uploadRoutes');
+
+router.use('/auth', authRoutes);
+router.use('/clients', clientRoutes);
+router.use('/reservations', reservationRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/rooms', roomRoutes);
+router.use('/invoices', invoiceRoutes);
+router.use('/housekeeping', housekeepingRoutes);
+router.use('/room-types', roomTypeRoutes);
+router.use('/payment-modes', paymentModeRoutes);
+router.use('/reservation-sources', reservationSourceRoutes);
+router.use('/documents', documentRoutes);
+router.use('/history-logs', historyLogRoutes);
+router.use('/dashboard', dashboardRoutes);
+router.use('/settings', settingsRoutes);
+router.use('/cash', cashRoutes);
+router.use('/reports', reportRoutes);
+router.use('/uploads', uploadRoutes);
+
+module.exports = router;

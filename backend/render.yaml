@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: hotel-pms-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        value: mongodb+srv://seckf004_db_user:dqt4d9NFxR7W4qQk@cluster0.jtsguzy.mongodb.net
+      - key: JWT_SECRET
+        value: 27825e283f9a05b681a7722d25d1d9a8651df22b3abadb68f7a79dd9843c93e5260e8f805aa781d201725a5b7bfb51a955b5698670d1ef8dca075ca34b175da5
+      - key: JWT_EXPIRES_IN
+        value: 1h
+      - key: JWT_REFRESH_SECRET
+        value: a0ed5670468d4ec64915ef07da69785eb1ee417f2058cf99d566972a1a57d610fbf7d1507ad45fa500641fb633f67dd203aae954afdad9a73b7afd67ed447992
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+      - key: CORS_ORIGIN
+        value: https://hotel-pms.vercel.app
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: CLOUDINARY_URL
+        value: cloudinary://126111324571312:XoAn-zx3pbqCQIh-YJa-vcLRFWc@zwxa3amj
+      - key: CLOUDINARY_FOLDER
+        value: hotel-pms
+      - key: MAX_FILE_SIZE
+        value: 5242880
+      - key: LOG_LEVEL
+        value: info
