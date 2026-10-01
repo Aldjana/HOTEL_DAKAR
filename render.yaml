@@ -21,7 +21,7 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 30d
       - key: CORS_ORIGIN
-        value: https://hotel-pms.vercel.app
+        value: https://hotel-dakar.vercel.app
       - key: RATE_LIMIT_WINDOW_MS
         value: 900000
       - key: RATE_LIMIT_MAX_REQUESTS
