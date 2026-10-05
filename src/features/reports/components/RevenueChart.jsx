@@ -5,42 +5,50 @@ import { tr } from '../../../i18n';
 const MONTHS = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOÛT', 'SEPT', 'OCT', 'NOV', 'DÉC'];
 const dayLabel = (d) => `${d.slice(8)} ${tr(MONTHS[Number(d.slice(5, 7)) - 1])}`;
 
-// series : [{ date: 'YYYY-MM-DD', amount }] ; today : 'YYYY-MM-DD' (les jours futurs sont « prévisionnel »)
-const RevenueChart = ({ series = [], today }) => {
+// Libellés de l'axe X : 1er jour, tous les 5 jours puis dernier jour (01, 05, 10 … 25, 28) ;
+// au-delà d'un mois, environ 8 libellés répartis.
+const showLabel = (i, n) => {
+  if (i === 0 || i === n - 1) return true;
+  if (n > 31) return i % Math.ceil(n / 8) === 0 && n - 1 - i >= 2;
+  return (i + 1) % 5 === 0 && n - 1 - i >= 2;
+};
+
+// series : [{ date: 'YYYY-MM-DD', amount }] encaissé ; forecast : jours futurs prévisionnels (même format).
+// today : 'YYYY-MM-DD' (les jours après aujourd'hui sont « prévisionnel »).
+const RevenueChart = ({ series = [], forecast = [], today }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  const max = Math.max(...series.map((s) => s.amount), 0) || 1;
-  const step = Math.max(1, Math.ceil(series.length / 8));
-  const data = series.map((s, i) => ({
-    day: i % step === 0 || i === series.length - 1 ? dayLabel(s.date) : '',
+  const known = new Set(series.map((s) => s.date));
+  const all = [...series, ...forecast.filter((f) => !known.has(f.date))].sort((a, b) => a.date.localeCompare(b.date));
+  const max = Math.max(...all.map((s) => s.amount), 0) || 1;
+  const data = all.map((s, i) => ({
+    day: showLabel(i, all.length) ? dayLabel(s.date) : '',
     full: dayLabel(s.date),
     amount: s.amount,
     val: Math.max((s.amount / max) * 100, 2),
     type: s.date > today ? 'forecast' : s.amount > 0 ? 'real' : 'past',
   }));
+  const gap = data.length > 45 ? 'gap-px' : data.length > 20 ? 'gap-1' : 'gap-2';
   const TYPE_LABEL = { real: tr('Réel'), forecast: tr('Prévisionnel'), past: tr('Aucun encaissement') };
 
   return (
     <div className="relative h-64 w-full flex flex-col justify-between pt-4">
       {/* Lignes de grille horizontales */}
       <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6">
-        <div className="border-b border-slate-100 w-full h-0"></div>
-        <div className="border-b border-slate-100 w-full h-0"></div>
-        <div className="border-b border-slate-100 w-full h-0"></div>
-        <div className="border-b border-slate-100 w-full h-0"></div>
+        {[0, 1, 2, 3, 4].map((k) => <div key={k} className="border-b border-slate-100 w-full h-0"></div>)}
       </div>
 
       {/* Barres du graphique */}
-      <div className={`relative z-10 h-52 flex items-end justify-between px-2 ${data.length > 45 ? 'gap-px' : 'gap-1.5'}`}>
+      <div className={`relative z-10 h-52 flex items-end justify-between px-2 ${gap}`}>
         {data.map((item, idx) => (
-          <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end relative">
+          <div key={idx} className="flex-1 min-w-0 flex flex-col items-center h-full justify-end relative">
             <div
               style={{ height: `${item.val}%` }}
-              className={`w-full rounded-t-sm transition-all relative cursor-pointer hover:opacity-80 ${
+              className={`w-full max-w-[28px] rounded-t-[2px] transition-all relative cursor-pointer hover:opacity-80 ${
                 item.type === 'real'
                   ? 'bg-[#006C49]'
                   : item.type === 'forecast'
-                  ? 'bg-slate-300/80 border-t-2 border-dashed border-slate-700'
-                  : 'bg-slate-200/80'
+                  ? 'bg-[#D1D5DB] border-t-2 border-dashed border-slate-800'
+                  : 'bg-[#E5E7EB]'
               }`}
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
@@ -59,9 +67,9 @@ const RevenueChart = ({ series = [], today }) => {
       </div>
 
       {/* Labels Axe X */}
-      <div className="relative z-10 flex justify-between text-[9px] font-semibold uppercase text-slate-500 pt-2 px-1">
+      <div className={`relative z-10 flex justify-between text-[9px] font-semibold uppercase text-slate-700 pt-2 px-2 ${gap}`}>
         {data.map((item, idx) => (
-          <div key={idx} className="relative h-4 flex-1 text-center">
+          <div key={idx} className="relative h-4 flex-1 min-w-0 text-center">
             <span className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap">{item.day}</span>
           </div>
         ))}

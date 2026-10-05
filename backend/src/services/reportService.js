@@ -1,5 +1,5 @@
 const { Reservation, Payment, Room, Client, HistoryLog, Document } = require('../models');
-const { toDay, addDays, ymd, diffDays } = require('../utils/dates');
+const { toDay, today, addDays, ymd, diffDays } = require('../utils/dates');
 const AppError = require('../utils/AppError');
 
 const range = (query = {}) => {
@@ -30,6 +30,24 @@ const occupancySeries = async (from, days) => {
   });
 };
 
+// CA prévisionnel par nuit (après `to` et après aujourd'hui, jusqu'à `forecastTo`) : revenu chambre
+// des séjours non annulés qui occupent la nuit, réparti à parts égales sur les nuits du séjour.
+const forecastSeries = async (to, forecastTo) => {
+  const start = addDays(to > today() ? to : today(), 1);
+  const end = toDay(forecastTo);
+  if (!end || end < start) return [];
+  if (diffDays(start, end) > 62) throw AppError.badRequest('Horizon prévisionnel maximal : 62 jours');
+  const days = diffDays(start, end) + 1;
+  const reservations = await Reservation.find({ status: { $in: Reservation.BLOCKING_STATUSES }, arrival_date: { $lte: end }, departure_date: { $gt: start } }).lean();
+  return eachDay(start, days).map((date) => {
+    const d = toDay(date);
+    const amount = reservations
+      .filter((r) => r.arrival_date <= d && r.departure_date > d)
+      .reduce((s, r) => s + Math.max((r.subtotal_amount || 0) - (r.discount_amount || 0), 0) / Math.max(r.nights || diffDays(r.arrival_date, r.departure_date), 1), 0);
+    return { date, amount: Math.round(amount) };
+  });
+};
+
 const paymentsInRange = async (from, toExclusive) => Payment.find({ payment_date: { $gte: from, $lt: toExclusive }, payment_status: { $in: ['completed', 'refunded'] } }).lean();
 
 const reportService = {
@@ -37,11 +55,12 @@ const reportService = {
 
   async overview(query = {}) {
     const { from, to, toExclusive, days } = range(query);
-    const [payments, series, reservations, newClients] = await Promise.all([
+    const [payments, series, reservations, newClients, forecast] = await Promise.all([
       paymentsInRange(from, toExclusive),
       occupancySeries(from, days),
       Reservation.find({ arrival_date: { $gte: from, $lt: toExclusive } }).populate('client_id', 'first_name last_name company').populate({ path: 'room_id', populate: 'room_type_id' }).lean(),
       Client.countDocuments({ createdAt: { $gte: from, $lt: toExclusive } }),
+      query.forecast_to ? forecastSeries(to, query.forecast_to) : [],
     ]);
 
     const revenueByDay = Object.fromEntries(eachDay(from, days).map((d) => [d, 0]));
@@ -75,6 +94,7 @@ const reportService = {
       from: ymd(from), to: ymd(to), days,
       revenue, revenue_by_method: byMethod,
       revenue_series: Object.entries(revenueByDay).map(([date, amount]) => ({ date, amount })),
+      forecast_series: forecast,
       occupancy_series: series,
       occupancy_rate: availableNights ? Math.round((occupiedNights / availableNights) * 1000) / 10 : 0,
       adr: occupiedNights ? Math.round(roomRevenue / occupiedNights) : 0,
