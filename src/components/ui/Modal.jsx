@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useT } from '../../i18n';
 
@@ -14,7 +15,8 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md', footer }) => {
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
-  return (
+  // Rendu dans <body> : une modale contenant un <form> ne doit jamais se retrouver imbriquée dans le <form> de la page.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }} role="dialog" aria-modal="true">
       <div className={`flex max-h-[90vh] w-full ${SIZES[size] || SIZES.md} flex-col rounded-2xl bg-white shadow-xl`}>
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
@@ -24,7 +26,8 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md', footer }) => {
         <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
         {footer && <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 
