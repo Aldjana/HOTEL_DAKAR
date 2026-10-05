@@ -27,6 +27,8 @@ const ClientFormModal = ({ isOpen, onClose, client = null, onSaved }) => {
 
   const submit = async (e, force = false) => {
     e?.preventDefault();
+    // Le submit remonterait sinon (arbre React) jusqu'au formulaire parent, ex. la nouvelle réservation.
+    e?.stopPropagation();
     setError('');
     if (form.first_name.trim().length < 2 || form.last_name.trim().length < 2) return setError(t('Le prénom et le nom doivent contenir au moins 2 caractères'));
     if (!form.phone.trim() && !form.email.trim()) return setError(t('Renseignez au moins un téléphone ou un email'));
