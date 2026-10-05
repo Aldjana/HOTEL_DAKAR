@@ -39,6 +39,8 @@ const presetRange = (p) => {
   const n = { '7': 6, '30': 29, '90': 89 }[p];
   return { from: addDaysStr(t, -n), to: t };
 };
+// Fin du mois de `d` ('YYYY-MM-DD'), en UTC comme le reste des dates calendaires.
+const monthEnd = (d) => new Date(Date.UTC(Number(d.slice(0, 4)), Number(d.slice(5, 7)), 0)).toISOString().slice(0, 10);
 const short = (d) => `${d.slice(8)}/${d.slice(5, 7)}`;
 const pct = (n, total) => (total > 0 ? Math.round((n / total) * 100) : 0);
 const delta = (cur, prev) => (prev > 0 ? ((cur - prev) / prev) * 100 : null);
@@ -91,7 +93,9 @@ const ReportsPage = () => {
   const prevRange = { from: addDaysStr(prevTo, -(days - 1)), to: prevTo };
 
   const ok = !appliedInvalid;
-  const overview = useFetch(() => reportsApi.overview(range), [from, to], { enabled: tab === 'overview' && ok });
+  // Période = un mois calendaire (ex. « Ce mois ») : le graphique couvre tout le mois, jours futurs en prévisionnel.
+  const forecastTo = from === `${to.slice(0, 8)}01` && monthEnd(to) > todayStr() ? monthEnd(to) : undefined;
+  const overview = useFetch(() => reportsApi.overview({ ...range, forecast_to: forecastTo }), [from, to], { enabled: tab === 'overview' && ok });
   const prev = useFetch(() => reportsApi.overview(prevRange), [from, to], { enabled: tab === 'overview' && ok });
   const recent = useFetch(() => paymentsApi.list({ limit: 5, from, to }), [from, to], { enabled: tab === 'overview' && ok && can('payments.read') });
   const occ = useFetch(() => reportsApi.occupancy(range), [from, to], { enabled: tab === 'occupancy' && ok });
@@ -228,7 +232,7 @@ const ReportsPage = () => {
                       <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#0D1520]" /> {t('Prévisionnel')}</span>
                     </div>
                   </div>
-                  <RevenueChart series={o.revenue_series} today={todayStr()} />
+                  <RevenueChart series={o.revenue_series} forecast={o.forecast_series} today={todayStr()} />
                 </section>
                 <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm lg:col-span-4">
                   <h3 className="m-0 mb-5 text-[16px] font-bold">{t('Répartition par source')}</h3>
