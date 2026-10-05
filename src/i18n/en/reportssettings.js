@@ -98,13 +98,6 @@ export default {
   'Référentiels': 'Reference data',
   'Utilisateurs': 'Users',
   'Audit': 'Audit',
-  'Sauvegarde': 'Backup',
-  'Sauvegarde et restauration': 'Backup and restore',
-  'La sauvegarde des données se fait côté serveur (hébergeur MongoDB ou script fourni), pas depuis le navigateur :': 'Data backup is done server-side (MongoDB host or the provided script), not from the browser:',
-  'exporte toutes les collections en JSON (dossier backups/)': 'exports all collections as JSON (backups/ folder)',
-  'dossier': 'folder',
-  'restaure une sauvegarde': 'restores a backup',
-  'Planifiez ce script (cron) au minimum chaque nuit. Sur MongoDB Atlas, activez aussi les sauvegardes automatiques du cluster.': 'Schedule this script (cron) at least every night. On MongoDB Atlas, also enable the cluster automatic backups.',
   // Hôtel
   "Le nom de l'établissement est requis": 'The property name is required',
   'Informations enregistrées': 'Information saved',
