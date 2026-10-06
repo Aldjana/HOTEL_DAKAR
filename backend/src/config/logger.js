@@ -31,6 +31,10 @@ if (process.env.NODE_ENV !== 'production') {
       winston.format.simple()
     ),
   }));
+} else {
+  // En production (Render…), seuls les fichiers étaient utilisés : les erreurs n'apparaissaient pas
+  // dans les journaux de l'hébergeur. Les avertissements et erreurs vont aussi sur la console.
+  logger.add(new winston.transports.Console({ level: 'warn', format: winston.format.simple() }));
 }
 
 module.exports = logger;

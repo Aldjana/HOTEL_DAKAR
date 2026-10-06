@@ -3,6 +3,7 @@ const AppError = require('../utils/AppError');
 const { parsePagination } = require('../utils/pagination');
 const { toDay, addDays } = require('../utils/dates');
 const roomService = require('./roomService');
+const logger = require('../config/logger');
 
 const POPULATE = [
   { path: 'room_id', populate: 'room_type_id' },
@@ -26,6 +27,9 @@ const assertAssignable = async (userId) => {
   return u;
 };
 
+// Rattrapage des tâches de maintenance manquantes : ne doit jamais bloquer l'affichage du ménage.
+const syncMaintenance = () => roomService.ensureMaintenanceTasks().catch((err) => logger.error(`Tâches de maintenance : ${err.message}`, err));
+
 const housekeepingService = {
   async createTask(data, user) {
     const room = await Room.findById(data.room_id);
@@ -47,7 +51,7 @@ const housekeepingService = {
 
   async getAllTasks(query = {}) {
     // Une chambre en maintenance sans tâche (ex. statut changé avant cette règle) reçoit la sienne.
-    if (!query.task_type || query.task_type === 'maintenance') await roomService.ensureMaintenanceTasks();
+    if (!query.task_type || query.task_type === 'maintenance') await syncMaintenance();
     const { page, limit, skip } = parsePagination(query, { page: 1, limit: 50, max: 200 });
     const filter = {};
     for (const k of ['status', 'room_id', 'assigned_to', 'task_type', 'priority']) if (query[k]) filter[k] = query[k];
@@ -132,7 +136,7 @@ const housekeepingService = {
   },
 
   async getTaskStatistics() {
-    await roomService.ensureMaintenanceTasks();
+    await syncMaintenance();
     const [pending, inProgress, completed, skipped, total] = await Promise.all([
       HousekeepingTask.countDocuments({ status: 'pending' }),
       HousekeepingTask.countDocuments({ status: 'in_progress' }),
