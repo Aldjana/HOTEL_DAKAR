@@ -8,6 +8,7 @@ const startServer = async () => {
     // Connecter à MongoDB
     await connectDB();
     await require('./services/defaultsService').ensureDefaults();
+    await require('./services/roomService').ensureMaintenanceTasks();
     
     // Démarrer le serveur
     const server = app.listen(config.app.port, () => {
