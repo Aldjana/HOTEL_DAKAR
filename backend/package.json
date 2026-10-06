@@ -10,7 +10,8 @@
     "lint": "eslint src/",
     "seed": "node src/seeds/adminSeed.js",
     "backup": "node scripts/backup.js",
-    "restore": "node scripts/backup.js restore"
+    "restore": "node scripts/backup.js restore",
+    "reset": "node scripts/reset.js"
   },
   "keywords": [
     "hotel",
