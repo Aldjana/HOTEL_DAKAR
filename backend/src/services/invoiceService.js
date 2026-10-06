@@ -26,14 +26,20 @@ const populate = (q) => q.populate('client_id', 'first_name last_name email phon
 
 const buildItemsFromReservation = async (reservation) => {
   const { Room } = require('../models');
-  const lines = reservation.rooms?.length ? reservation.rooms : [{ room_id: reservation.room_id, nightly_rate: reservation.subtotal_amount / Math.max(reservation.nights, 1) }];
+  const nights = Math.max(reservation.nights || 1, 1);
+  // Anciennes réservations sans lignes ni sous-total : on reconstitue le montant chambre à partir du total.
+  const roomAmount = reservation.subtotal_amount
+    || Math.max((reservation.total_amount || 0) - (reservation.tax_amount || 0) - (reservation.stay_tax_amount || 0) + (reservation.discount_amount || 0), 0);
+  const lines = reservation.rooms?.length && reservation.rooms.some((l) => l.nightly_rate > 0)
+    ? reservation.rooms
+    : [{ room_id: reservation.room_id, nightly_rate: Math.round(roomAmount / nights) }];
   const rooms = await Room.find({ _id: { $in: lines.map((l) => l.room_id) } }).populate('room_type_id');
   const byId = Object.fromEntries(rooms.map((r) => [String(r._id), r]));
   const items = lines.map((l) => {
     const room = byId[String(l.room_id)];
     return {
       description: `Chambre ${room?.room_number || l.room_number || ''}${room?.room_type_id?.name ? ` (${room.room_type_id.name})` : ''} — ${ymd(reservation.arrival_date)} au ${ymd(reservation.departure_date)}`,
-      quantity: reservation.nights, unit_price: l.nightly_rate, total_price: l.nightly_rate * reservation.nights, item_type: 'room',
+      quantity: nights, unit_price: l.nightly_rate, total_price: l.nightly_rate * nights, item_type: 'room',
     };
   });
   if (reservation.stay_tax_amount > 0) {

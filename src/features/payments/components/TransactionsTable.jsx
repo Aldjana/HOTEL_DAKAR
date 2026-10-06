@@ -74,7 +74,7 @@ const TransactionsTable = ({ rows, methods, can, onReceipt, onAction }) => {
                 <td className="py-3"><div>{dayMonth(p.payment_date)}</div><div className="text-[12px] text-slate-400">{timeOf(p.payment_date)}</div></td>
                 <td className="py-3 font-semibold">{res ? <Link to={`/reservations/${res._id}`} className="text-inherit no-underline hover:underline">{res.reservation_number}</Link> : '—'}</td>
                 <td className="py-3">{fullName(res?.client_id) || '—'}</td>
-                <td className={`py-3 font-bold ${refund ? 'text-[#dc3b4e]' : voided ? 'text-slate-400 line-through' : ''}`}>{refund ? '−' : ''}{formatMoney(p.amount, 'XOF')}</td>
+                <td className={`py-3 font-bold ${refund ? 'text-[#dc3b4e]' : voided ? 'text-slate-400 line-through' : ''}`}>{refund ? '−' : ''}{formatMoney(p.amount)}</td>
                 <td className="py-3">
                   <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${modeClass(p.payment_method)}`}>{paymentMethodLabel(p.payment_method, methods)}</span>
                   {refund && <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">{t('Remboursement')}</span>}

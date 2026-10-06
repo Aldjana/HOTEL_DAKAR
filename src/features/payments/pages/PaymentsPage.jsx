@@ -57,7 +57,7 @@ const PaymentsPage = () => {
       <div className="mb-5 flex flex-wrap gap-3">
         <div className="min-w-[220px] flex-1 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
           <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">{periodic ? t('Total encaissé (net)') : t("Total encaissé aujourd'hui")}</div>
-          <div className="mt-2 text-[28px] font-bold">{summary ? formatNumber(summary.net_total) : '—'} <span className="text-[14px] font-medium text-slate-400">XOF</span></div>
+          <div className="mt-2 text-[28px] font-bold">{summary ? formatNumber(summary.net_total) : '—'} <span className="text-[14px] font-medium text-slate-400">FCFA</span></div>
           {!periodic && (
             <div className={`mt-1 text-[12px] font-semibold ${trend != null && trend < 0 ? 'text-[#dc3b4e]' : 'text-[#0f9f6e]'}`}>
               {trend == null ? <span className="font-normal text-slate-400">{t('— vs hier')}</span> : <>{trend < 0 ? '↘' : '↗'} {trend > 0 ? '+' : ''}{trend}% <span className="font-normal text-slate-400">{t('vs hier')}</span></>}
