@@ -12,7 +12,7 @@ const dashboardService = {
     const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
     const canSeeMoney = user ? ['admin', 'manager', 'reception'].includes(user.role) : true;
 
-    const [roomStats, arrivals, departures, inHouse, options, monthReservations, newClients] = await Promise.all([
+    const [roomStats, arrivals, departures, inHouse, options, monthReservations, newClients, upcoming] = await Promise.all([
       roomService.getRoomStatistics(),
       Reservation.find({ arrival_date: today, status: { $in: ['pending', 'confirmed', 'checked_in'] } }).populate(POP).sort({ createdAt: 1 }),
       Reservation.find({ departure_date: today, status: { $in: ['checked_in', 'checked_out'] } }).populate(POP).sort({ createdAt: 1 }),
@@ -20,6 +20,8 @@ const dashboardService = {
       Reservation.countDocuments({ status: 'pending' }),
       Reservation.countDocuments({ createdAt: { $gte: monthStart } }),
       Client.countDocuments({ createdAt: { $gte: monthStart } }),
+      // Réservations à venir : arrivées des 7 prochains jours (hors aujourd'hui)
+      Reservation.countDocuments({ arrival_date: { $gte: tomorrow, $lt: addDays(today, 8) }, status: { $in: ['pending', 'confirmed'] } }),
     ]);
 
     const alerts = [];
@@ -37,6 +39,7 @@ const dashboardService = {
       departures_count: departures.filter((r) => r.status === 'checked_in').length,
       in_house_count: inHouse.length,
       pending_options: options,
+      upcoming_count: upcoming,
       reservations_this_month: monthReservations,
       new_clients_this_month: newClients,
       arrivals, departures, in_house: inHouse,
