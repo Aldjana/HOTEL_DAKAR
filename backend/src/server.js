@@ -7,8 +7,13 @@ const startServer = async () => {
   try {
     // Connecter à MongoDB
     await connectDB();
-    await require('./services/defaultsService').ensureDefaults();
-    await require('./services/roomService').ensureMaintenanceTasks();
+    // Entretien des données au démarrage : une erreur ici est journalisée mais n'empêche pas le serveur de démarrer.
+    for (const [label, task] of [
+      ['données de référence', () => require('./services/defaultsService').ensureDefaults()],
+      ['tâches de maintenance', () => require('./services/roomService').ensureMaintenanceTasks()],
+    ]) {
+      try { await task(); } catch (err) { logger.error(`Démarrage — ${label} : ${err.message}`, err); }
+    }
     
     // Démarrer le serveur
     const server = app.listen(config.app.port, () => {
@@ -44,6 +49,7 @@ const startServer = async () => {
     
   } catch (error) {
     logger.error('Échec du démarrage du serveur:', error);
+    console.error('Échec du démarrage du serveur:', error);
     process.exit(1);
   }
 };
