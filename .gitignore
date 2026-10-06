@@ -23,6 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Sauvegardes de la base (contiennent des données clients)
+backups/
+
 # Environment variables
 .env
 .env.local

@@ -52,5 +52,6 @@ BASE_URL=http://localhost:3100/api/v1 node --test tests/e2e.test.js
 ```
 
 Sauvegarde / restauration : `npm run backup` et `npm run restore -- <dossier>` (dans `backend/`).
+Réinitialiser l'activité (réservations, clients, paiements, factures…, en gardant utilisateurs, chambres et paramètres) : `npm run reset` (dans `backend/`) — sauvegarde automatique avant effacement, confirmation demandée.
 
 Les anciens rapports d'audit et scripts de test obsolètes sont archivés dans `docs/archive/`.
