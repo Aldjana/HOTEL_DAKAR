@@ -191,9 +191,9 @@ const ReservationForm = ({ reservation = null, initial = {} }) => {
             <Field label={t('Prénom')}><input className={ro} placeholder={t('Ex: Moussa')} value={client?.first_name || ''} readOnly /></Field>
             <Field label={t('Nom')}><input className={ro} placeholder={t('Ex: Diop')} value={client?.last_name || ''} readOnly /></Field>
             <Field label={t('Téléphone')}><input className={ro} placeholder="+221 7x xxx xx xx" value={client?.phone || ''} readOnly /></Field>
-            <Field label={t('Email')}><input className={ro} type="email" value={client?.email || ''} readOnly /></Field>
-            <Field label={t('Type client')}><input className={ro} value={clientType} readOnly /></Field>
-            <Field label={t('Nationalité')}><input className={ro} value={client?.nationality || ''} readOnly /></Field>
+            <Field label={t('Email')}><input className={ro} type="email" placeholder={t('Rempli depuis la fiche client')} value={client?.email || ''} readOnly /></Field>
+            <Field label={t('Type client')}><input className={ro} placeholder={t('Rempli depuis la fiche client')} value={clientType} readOnly /></Field>
+            <Field label={t('Nationalité')}><input className={ro} placeholder={t('Rempli depuis la fiche client')} value={client?.nationality || ''} readOnly /></Field>
             <div className="md:col-span-2">
               <Field label={t('ID (Passeport / CNI)')}><input className={ro} placeholder={t('Numéro de document')} value={client?.id_document_number || ''} readOnly /></Field>
             </div>

@@ -9,6 +9,20 @@ const TwoLines = ({ text }) => {
   return i < 0 ? text : <>{text.slice(0, i)}<br />{text.slice(i + 1)}</>;
 };
 
+const CheckOutAction = ({ r, canWrite }) => {
+  const { t } = useT();
+  if (r.status === 'checked_out') return <span className="text-[12px] font-semibold text-slate-400">{t('Parti')}</span>;
+  if (!canWrite) return null;
+  return (
+    <Link
+      to={reservationPath(r._id, 'check-out')}
+      className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12px] font-semibold text-slate-700 no-underline hover:bg-slate-50"
+    >
+      {t('Check-out')}
+    </Link>
+  );
+};
+
 const DeparturesTable = ({ departures, canWrite }) => {
   const { t } = useT();
   return (
@@ -20,7 +34,24 @@ const DeparturesTable = ({ departures, canWrite }) => {
         </Link>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile : cartes, le bouton Check-out reste visible sans défilement horizontal */}
+      <ul className="m-0 list-none divide-y divide-slate-100 border-t border-slate-100 p-0 md:hidden">
+        {departures.length === 0 && <li className="px-5 py-6 text-center text-[13px] text-slate-400">{t('Aucun départ prévu aujourd\'hui.')}</li>}
+        {departures.map((r) => (
+          <li key={r._id} className="flex items-center justify-between gap-3 px-5 py-3">
+            <div className="min-w-0">
+              <Link to={reservationPath(r._id)} className="block truncate text-[13px] font-semibold text-slate-800 no-underline">{fullName(r.client_id) || '—'}</Link>
+              <div className="text-[12px] text-slate-400">
+                {t('Chambre')} {r.room_id?.room_number || '—'}{r.rooms?.length > 1 ? ` +${r.rooms.length - 1}` : ''} · {ROOM_STATUS_LABELS[r.room_id?.status] || '—'}
+              </div>
+              <div className="text-[12px] font-semibold text-[#10B981]">{t('Solde')} : {formatMoney(r.balance_amount)}</div>
+            </div>
+            <CheckOutAction r={r} canWrite={canWrite} />
+          </li>
+        ))}
+      </ul>
+
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[520px] border-collapse">
           <thead>
             <tr className="bg-[#f3f6f8] text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
@@ -60,18 +91,7 @@ const DeparturesTable = ({ departures, canWrite }) => {
                     {ROOM_STATUS_LABELS[r.room_id?.status] || '—'}
                   </span>
                 </td>
-                <td className="px-3 py-4">
-                  {r.status === 'checked_out' ? (
-                    <span className="text-[12px] font-semibold text-slate-400">{t('Parti')}</span>
-                  ) : canWrite ? (
-                    <Link
-                      to={reservationPath(r._id, 'check-out')}
-                      className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12px] font-semibold text-slate-700 no-underline hover:bg-slate-50"
-                    >
-                      {t('Check-out')}
-                    </Link>
-                  ) : null}
-                </td>
+                <td className="px-3 py-4"><CheckOutAction r={r} canWrite={canWrite} /></td>
               </tr>
             ))}
           </tbody>

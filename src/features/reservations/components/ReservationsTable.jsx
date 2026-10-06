@@ -22,7 +22,32 @@ const roomsOf = (r) => {
 const ReservationsTable = ({ reservations, onViewDetails }) => {
   const { t } = useT();
   return (
-    <div className="overflow-x-auto">
+    <>
+    {/* Mobile : une carte par réservation */}
+    <ul className="m-0 list-none divide-y divide-slate-100 p-0 md:hidden">
+      {reservations.map((row) => {
+        const balance = Number(row.balance_amount) || 0;
+        return (
+          <li key={row._id}>
+            <button type="button" onClick={() => onViewDetails(row._id)} className="flex w-full items-start justify-between gap-3 border-0 bg-transparent px-4 py-3 text-left">
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-semibold text-slate-800">{fullName(row.client_id) || t('Inconnu')}</div>
+                <div className="text-[12px] text-slate-400">{row.reservation_number} · {roomsOf(row)}</div>
+                <div className="text-[12px] text-slate-500">{formatDay(row.arrival_date)} → {formatDay(row.departure_date)}</div>
+              </div>
+              <div className="shrink-0 text-right">
+                <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusClasses[row.status] || 'bg-slate-100 text-slate-500'}`}>
+                  {RESERVATION_STATUS_LABELS[row.status] || row.status}
+                </span>
+                <div className="mt-1 text-[13px] font-bold text-slate-800">{formatNumber(row.total_amount)}</div>
+                {balance > 0 && <div className="text-[12px] font-semibold text-[#ef4444]">{t('Solde')} {formatNumber(balance)}</div>}
+              </div>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+    <div className="hidden overflow-x-auto md:block">
       <table className="w-full min-w-[860px] border-collapse">
         <thead>
           <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
@@ -88,6 +113,7 @@ const ReservationsTable = ({ reservations, onViewDetails }) => {
         </tbody>
       </table>
     </div>
+    </>
   );
 };
 

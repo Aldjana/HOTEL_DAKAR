@@ -39,10 +39,66 @@ const RowMenu = ({ items }) => {
   );
 };
 
+const rowItems = (p, can, onReceipt, onAction) => {
+  const refund = p.type === 'refund';
+  const voided = p.payment_status === 'voided';
+  return [
+    { label: 'Reçu PDF', icon: Receipt, onClick: () => onReceipt(p) },
+    !voided && !refund && can('payments.correct') && { label: 'Corriger', icon: Pencil, onClick: () => onAction('correct', p) },
+    p.payment_status === 'completed' && !refund && can('payments.correct') && { label: 'Rembourser', icon: RotateCcw, onClick: () => onAction('refund', p) },
+    !voided && can('payments.delete') && { label: 'Annuler', icon: Ban, danger: true, onClick: () => onAction('void', p) },
+  ].filter(Boolean);
+};
+
+const Badges = ({ p, methods }) => {
+  const { t } = useT();
+  const refund = p.type === 'refund';
+  return (
+    <>
+      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${modeClass(p.payment_method)}`}>{paymentMethodLabel(p.payment_method, methods)}</span>
+      {refund && <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">{t('Remboursement')}</span>}
+      {p.payment_status !== 'completed' && !refund && <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">{PAYMENT_STATUS_LABELS[p.payment_status] || p.payment_status}</span>}
+    </>
+  );
+};
+
+const amountClass = (p) => (p.type === 'refund' ? 'text-[#dc3b4e]' : p.payment_status === 'voided' ? 'text-slate-400 line-through' : '');
+
+// Mobile : une carte par paiement (pas de colonnes coupées sur petit écran).
+const TransactionCards = ({ rows, methods, can, onReceipt, onAction }) => {
+  const { t } = useT();
+  if (rows.length === 0) return <p className="py-8 text-center text-[13px] text-slate-400">{t('Aucun paiement trouvé')}</p>;
+  return (
+    <ul className="m-0 list-none divide-y divide-slate-100 p-0">
+      {rows.map((p) => {
+        const res = p.reservation_id;
+        return (
+          <li key={p._id} className="flex items-start justify-between gap-3 py-3 text-[13px]">
+            <div className="min-w-0">
+              <div className="truncate font-semibold text-slate-800">{fullName(res?.client_id) || '—'}</div>
+              <div className="text-[12px] text-slate-400">
+                {dayMonth(p.payment_date)} · {timeOf(p.payment_date)}
+                {res && <> · <Link to={`/reservations/${res._id}`} className="text-inherit">{res.reservation_number}</Link></>}
+              </div>
+              <div className="mt-1.5"><Badges p={p} methods={methods} /></div>
+            </div>
+            <div className="flex shrink-0 items-start gap-2">
+              <span className={`whitespace-nowrap font-bold ${amountClass(p)}`}>{p.type === 'refund' ? '−' : ''}{formatMoney(p.amount)}</span>
+              <RowMenu items={rowItems(p, can, onReceipt, onAction)} />
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+
 const TransactionsTable = ({ rows, methods, can, onReceipt, onAction }) => {
   const { t } = useT();
   return (
-    <div className="overflow-x-auto">
+    <>
+    <div className="md:hidden"><TransactionCards rows={rows} methods={methods} can={can} onReceipt={onReceipt} onAction={onAction} /></div>
+    <div className="hidden overflow-x-auto md:block">
       <table className="w-full min-w-[800px] text-left text-[13px]">
         <thead>
           <tr className="text-[11px] uppercase tracking-[0.1em] text-slate-400">
@@ -60,26 +116,16 @@ const TransactionsTable = ({ rows, methods, can, onReceipt, onAction }) => {
           {rows.length === 0 && <tr className="border-t border-slate-100"><td colSpan={8} className="py-8 text-center text-slate-400">{t('Aucun paiement trouvé')}</td></tr>}
           {rows.map((p) => {
             const refund = p.type === 'refund';
-            const voided = p.payment_status === 'voided';
             const res = p.reservation_id;
             const user = p.processed_by;
-            const items = [
-              { label: 'Reçu PDF', icon: Receipt, onClick: () => onReceipt(p) },
-              !voided && !refund && can('payments.correct') && { label: 'Corriger', icon: Pencil, onClick: () => onAction('correct', p) },
-              p.payment_status === 'completed' && !refund && can('payments.correct') && { label: 'Rembourser', icon: RotateCcw, onClick: () => onAction('refund', p) },
-              !voided && can('payments.delete') && { label: 'Annuler', icon: Ban, danger: true, onClick: () => onAction('void', p) },
-            ].filter(Boolean);
+            const items = rowItems(p, can, onReceipt, onAction);
             return (
               <tr key={p._id} className="border-t border-slate-100">
                 <td className="py-3"><div>{dayMonth(p.payment_date)}</div><div className="text-[12px] text-slate-400">{timeOf(p.payment_date)}</div></td>
                 <td className="py-3 font-semibold">{res ? <Link to={`/reservations/${res._id}`} className="text-inherit no-underline hover:underline">{res.reservation_number}</Link> : '—'}</td>
                 <td className="py-3">{fullName(res?.client_id) || '—'}</td>
-                <td className={`py-3 font-bold ${refund ? 'text-[#dc3b4e]' : voided ? 'text-slate-400 line-through' : ''}`}>{refund ? '−' : ''}{formatMoney(p.amount)}</td>
-                <td className="py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${modeClass(p.payment_method)}`}>{paymentMethodLabel(p.payment_method, methods)}</span>
-                  {refund && <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">{t('Remboursement')}</span>}
-                  {p.payment_status !== 'completed' && !refund && <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">{PAYMENT_STATUS_LABELS[p.payment_status] || p.payment_status}</span>}
-                </td>
+                <td className={`py-3 font-bold ${amountClass(p)}`}>{refund ? '−' : ''}{formatMoney(p.amount)}</td>
+                <td className="py-3"><Badges p={p} methods={methods} /></td>
                 <td className="py-3 text-slate-400">{p.reference || p.receipt_number || p.transaction_id || '—'}</td>
                 <td className="py-3">
                   {user ? (
@@ -96,6 +142,7 @@ const TransactionsTable = ({ rows, methods, can, onReceipt, onAction }) => {
         </tbody>
       </table>
     </div>
+    </>
   );
 };
 

@@ -55,8 +55,8 @@ const InvoicesListPage = () => {
           <input value={f.search} onChange={set('search')} placeholder={t('N° de facture, client, réservation…')} className={`${fieldCls} min-w-[240px] flex-1`} />
           <select value={f.status} onChange={set('status')} className={fieldCls}><option value="">{t('Tous les statuts')}</option>{Object.entries(INVOICE_STATUS_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
           <select value={f.type} onChange={set('type')} className={fieldCls}><option value="">{t('Factures + proformas')}</option><option value="invoice">{t('Factures')}</option><option value="proforma">{t('Proformas')}</option></select>
-          <input type="date" value={f.from} onChange={set('from')} title={t('Du')} className={fieldCls} />
-          <input type="date" value={f.to} onChange={set('to')} title={t('Au')} className={fieldCls} />
+          <label className="inline-flex items-center gap-1 text-[12px] text-slate-500">{t('Du')}<input type="date" value={f.from} onChange={set('from')} title={t('Du')} className={fieldCls} /></label>
+          <label className="inline-flex items-center gap-1 text-[12px] text-slate-500">{t('Au')}<input type="date" value={f.to} onChange={set('to')} title={t('Au')} className={fieldCls} /></label>
         </div>
       )}
 
@@ -65,7 +65,28 @@ const InvoicesListPage = () => {
           <EmptyState icon={<FileText className="w-16 h-16 text-gray-400" />} title={t('Aucune facture')} message={t("Une facture est créée automatiquement au check-out, ou depuis la fiche d'une réservation.")} />
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Mobile : une carte par facture */}
+            <ul className="m-0 list-none divide-y divide-slate-100 p-0 md:hidden">
+              {data.items.length === 0 && <li className="py-8 text-center text-[13px] text-slate-400">{t('Aucune facture ne correspond aux filtres')}</li>}
+              {data.items.map((i) => (
+                <li key={i._id} className="flex items-start justify-between gap-3 py-3 text-[13px]" onClick={() => navigate(`/invoices/${i._id}`)}>
+                  <div className="min-w-0">
+                    <div className="font-semibold">{i.invoice_number}{i.type === 'proforma' && <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">{t('Proforma')}</span>}</div>
+                    <div className="truncate text-[12px] text-slate-400">{fullName(i.client) || '—'} · {formatDay(i.issue_date)}</div>
+                    <div className="mt-1"><StatusBadge status={i.status} type="invoice" size="sm" /></div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <div className="font-bold">{formatMoney(i.total_amount)}</div>
+                    {i.status !== 'cancelled' && i.balance_amount > 0 && <div className="text-[12px] font-semibold text-[#dc3b4e]">{t('Reste dû')} {formatMoney(i.balance_amount)}</div>}
+                    <div className="mt-1 flex justify-end gap-3 text-slate-400">
+                      <button type="button" title={t('Voir / imprimer le PDF')} className="border-0 bg-transparent p-0 text-slate-400" onClick={stop(() => openPdf(`/invoices/${i._id}/pdf`).catch(fail))}><Printer className="h-4 w-4" /></button>
+                      <button type="button" title={t('Télécharger le PDF')} className="border-0 bg-transparent p-0 text-slate-400" onClick={stop(() => downloadFile(`/invoices/${i._id}/pdf`, undefined, `${i.invoice_number}.pdf`).catch((e) => toast.error(e.response?.data?.message || t('Téléchargement impossible'))))}><Download className="h-4 w-4" /></button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[800px] text-left text-[13px]">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-[0.1em] text-slate-400">
