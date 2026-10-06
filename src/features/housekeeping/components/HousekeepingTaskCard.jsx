@@ -57,6 +57,8 @@ const HousekeepingTaskCard = ({ task, staff = [], canManage, canWrite, onStart, 
           className="mt-3 h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-[12px] text-slate-500"
         >
           <option value="">{t('Non assignée')}</option>
+          {/* Ancienne assignation à une personne hors ménage : reste affichée */}
+          {assignedId && !staff.some((u) => u._id === assignedId) && <option value={assignedId}>{fullName(task.assigned_to) || t('personne')}</option>}
           {staff.map((u) => <option key={u._id} value={u._id}>{fullName(u)}</option>)}
         </select>
       ) : (

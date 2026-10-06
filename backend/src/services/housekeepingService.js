@@ -17,11 +17,20 @@ const load = async (id) => {
   return t;
 };
 
+// Seuls les comptes « ménage » actifs peuvent recevoir une tâche.
+const ASSIGNABLE_ROLES = ['housekeeping'];
+const assertAssignable = async (userId) => {
+  const u = await User.findOne({ _id: userId, is_active: true }).select('role');
+  if (!u) throw AppError.notFound('Utilisateur non trouvé');
+  if (!ASSIGNABLE_ROLES.includes(u.role)) throw AppError.badRequest('Seul le personnel de ménage peut être assigné à une tâche');
+  return u;
+};
+
 const housekeepingService = {
   async createTask(data, user) {
     const room = await Room.findById(data.room_id);
     if (!room) throw AppError.notFound('Chambre non trouvée');
-    if (data.assigned_to && !(await User.exists({ _id: data.assigned_to, is_active: true }))) throw AppError.notFound('Utilisateur non trouvé');
+    if (data.assigned_to) await assertAssignable(data.assigned_to);
     const dup = await HousekeepingTask.findOne({ room_id: room._id, task_type: data.task_type || 'cleaning', status: { $in: ['pending', 'in_progress'] } });
     if (dup) throw AppError.conflict(`Une tâche identique est déjà ouverte pour la chambre ${room.room_number}`);
     const task = await HousekeepingTask.create({
@@ -57,7 +66,7 @@ const housekeepingService = {
     if (['completed'].includes(task.status) && data.status && data.status !== 'completed') throw AppError.conflict('Une tâche terminée ne peut plus être rouverte');
     for (const k of ['priority', 'notes', 'task_type', 'scheduled_date']) if (data[k] !== undefined) task[k] = data[k];
     if (data.assigned_to !== undefined) {
-      if (data.assigned_to && !(await User.exists({ _id: data.assigned_to, is_active: true }))) throw AppError.notFound('Utilisateur non trouvé');
+      if (data.assigned_to) await assertAssignable(data.assigned_to);
       task.assigned_to = data.assigned_to || undefined;
     }
     if (data.status === 'in_progress') return this.startTask(id, null, task);
@@ -99,8 +108,7 @@ const housekeepingService = {
   async assignTask(id, assigned_to) {
     const task = await HousekeepingTask.findById(id);
     if (!task) throw AppError.notFound('Tâche non trouvée');
-    const user = await User.findOne({ _id: assigned_to, is_active: true });
-    if (!user) throw AppError.notFound('Utilisateur non trouvé');
+    const user = await assertAssignable(assigned_to);
     task.assigned_to = user._id;
     await task.save();
     return load(id);
@@ -118,7 +126,7 @@ const housekeepingService = {
   },
 
   async getAssignableStaff() {
-    return User.find({ is_active: true, role: { $in: ['housekeeping', 'manager', 'admin', 'reception'] } }).select('first_name last_name role').sort({ first_name: 1 });
+    return User.find({ is_active: true, role: { $in: ASSIGNABLE_ROLES } }).select('first_name last_name role').sort({ first_name: 1 });
   },
 
   async getTaskStatistics() {
