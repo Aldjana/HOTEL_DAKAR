@@ -20,8 +20,30 @@ const Table = ({
     );
   }
 
+  const cell = (column, row) => (column.render ? column.render(row[column.key], row) : row[column.key]);
+  const [first, ...rest] = columns;
+
   return (
-    <div className={`w-full overflow-x-auto rounded-lg border border-gray-200 ${className}`}>
+    <>
+    {/* Mobile : une carte par ligne (1re colonne en titre, les autres en « libellé : valeur ») */}
+    <ul className={`m-0 list-none divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white p-0 md:hidden ${className}`}>
+      {data.map((row, rowIndex) => (
+        <li
+          key={row[rowKey] || rowIndex}
+          className={`px-4 py-3 text-sm ${onRowClick ? 'cursor-pointer' : ''}`}
+          onClick={onRowClick ? () => onRowClick(row) : undefined}
+        >
+          <div className="mb-1 font-semibold text-gray-800">{cell(first, row)}</div>
+          {rest.map((column) => (
+            <div key={column.key} className="flex justify-between gap-3 text-gray-600">
+              <span className="text-gray-400">{column.label}</span>
+              <span className="text-right">{cell(column, row)}</span>
+            </div>
+          ))}
+        </li>
+      ))}
+    </ul>
+    <div className={`hidden w-full overflow-x-auto rounded-lg border border-gray-200 md:block ${className}`}>
       <table className="w-full border-collapse bg-white">
         <thead>
           <tr className="bg-gray-50">
@@ -41,7 +63,7 @@ const Table = ({
             >
               {columns.map((column) => (
                 <td key={column.key} className={`px-4 py-4 text-gray-600 text-sm ${column.align === 'right' ? 'text-right' : ''}`}>
-                  {column.render ? column.render(row[column.key], row) : row[column.key]}
+                  {cell(column, row)}
                 </td>
               ))}
             </tr>
@@ -49,6 +71,7 @@ const Table = ({
         </tbody>
       </table>
     </div>
+    </>
   );
 };
 

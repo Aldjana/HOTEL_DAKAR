@@ -47,12 +47,12 @@ const ClientPicker = ({ value, onChange, disabled, error }) => {
 
   return (
     <div className="relative" ref={ref}>
-      <div className="flex gap-2">
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input value={term} onChange={(e) => { setTerm(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)} placeholder={t('Rechercher un client par nom, téléphone, email…')} className={`${inputClass} pl-10 ${error ? 'border-red-400' : ''}`} />
         </div>
-        <button type="button" onClick={() => setCreating(true)} className="inline-flex h-11 items-center gap-1 rounded-lg border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700"><Plus className="h-4 w-4" /> {t('Nouveau client')}</button>
+        <button type="button" onClick={() => setCreating(true)} className="inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700"><Plus className="h-4 w-4" /> {t('Nouveau client')}</button>
       </div>
       {open && debounced.trim().length >= 2 && (
         <div className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-sm">

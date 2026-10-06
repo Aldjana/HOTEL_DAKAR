@@ -98,7 +98,7 @@ const RoomsListPage = () => {
       </div>
 
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <RoomStatsCard label={t('Total chambres')} value={total} badge={total ? `↗ ${Math.round(((total - down) / total) * 100)}%` : undefined} badgeClass="bg-[#d8f8ea] text-[#0f9f6e]" />
+        <RoomStatsCard label={t('Total chambres')} value={total} meta={total ? t('{n}% en service', { n: Math.round(((total - down) / total) * 100) }) : undefined} metaClass="text-[#0f9f6e]" valueClass="" />
         <RoomStatsCard label={t('Disponibles')} value={stats?.available ?? '—'} meta={total ? t('{n}% du parc', { n: Math.round(((stats.available || 0) / total) * 100) }) : undefined} metaClass="text-[#0f9f6e]" />
         <RoomStatsCard label={t('En maintenance')} value={stats?.maintenance ?? '—'} meta={stats?.blocked ? t('Bloquées: {n}', { n: stats.blocked }) : undefined} metaClass="text-red-400" />
         <RoomStatsCard label={t("Taux d'occupation")} value={stats ? `${stats.occupancy_rate ?? 0}%` : '—'} meta={stats ? t('{n} occupée(s)', { n: stats.occupied || 0 }) : undefined} metaClass="text-red-400" />
@@ -128,7 +128,7 @@ const RoomsListPage = () => {
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-[18px] font-bold">{t('Ch. {n}', { n: room.room_number })}</div>
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">{room.room_type_id?.name}{room.is_active === false && ' · ' + t('Désactivée')}</div>
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">{room.room_type_id?.name || t('Type non défini')}{room.is_active === false && ' · ' + t('Désactivée')}</div>
                     </div>
                     <div className="text-right">
                       <div className="font-bold">{formatMoney(room.base_price)}</div>

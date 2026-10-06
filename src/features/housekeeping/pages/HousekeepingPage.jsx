@@ -43,7 +43,7 @@ const HousekeepingPage = () => {
     { id: 'pending', label: t('À nettoyer'), count: stats?.pending ?? '—', icon: 'User' },
     { id: 'in_progress', label: t('En cours'), count: stats?.inProgress ?? '—', icon: 'Clock' },
     { id: 'completed', label: t('Terminées'), count: stats?.completed ?? '—', icon: 'BadgeCheck' },
-    { id: 'maintenance', label: t('Maintenance'), count: maint.data ? maintItems.length : '—', icon: 'TriangleAlert' },
+    { id: 'maintenance', label: t('Tâches maintenance'), count: maint.data ? maintItems.length : '—', icon: 'TriangleAlert' },
   ];
   const maintRooms = stats?.rooms.maintenance;
 
@@ -59,7 +59,7 @@ const HousekeepingPage = () => {
         <HousekeepingStatsCard label={t('Total à faire')} value={pad(stats ? stats.pending + stats.inProgress : null)} unit={t('Tâches')} color="text-slate-900" />
         <HousekeepingStatsCard label={t('En cours')} value={pad(stats?.inProgress)} unit={t('Tâches')} color="text-slate-900" />
         <HousekeepingStatsCard label={t('Prêtes')} value={pad(stats?.rooms.ready)} unit={t('Chambres')} color="text-[#0f9f6e]" borderClass="border-l-[#10B981]" />
-        <HousekeepingStatsCard label={t('Maintenance')} value={pad(maintRooms)} unit={maintRooms > 0 ? t('Urgent') : t('Chambres')} color="text-red-500" borderClass="border-l-red-500" />
+        <HousekeepingStatsCard label={t('Chambres en maintenance')} value={pad(maintRooms)} unit={t('Chambres')} color="text-red-500" borderClass="border-l-red-500" />
       </div>
 
       <div className="flex flex-wrap items-start justify-between gap-2">

@@ -77,6 +77,11 @@ const MetricsGrid = ({ data, showMoney = true }) => {
             <span className="text-[32px] font-bold leading-none text-slate-900">{pad(data.arrivals_count)}</span>
             <span className="pb-1 text-[13px] text-slate-400">check-ins</span>
           </div>
+          {data.upcoming_count !== undefined && (
+            <Link to={ROUTES.RESERVATIONS} className="mt-3 block text-[13px] text-slate-500 no-underline hover:text-slate-800">
+              {t('{n} réservation(s) à venir (7 jours)', { n: data.upcoming_count })}
+            </Link>
+          )}
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-white px-5 py-5 shadow-sm">

@@ -8,7 +8,26 @@ const ClientsTable = ({ clients, pagination, onPageChange, onOpen }) => {
   const { t, lang } = useT();
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-      <div className="overflow-x-auto">
+      {/* Mobile : une carte par client */}
+      <ul className="m-0 list-none divide-y divide-slate-100 p-0 md:hidden">
+        {clients.map((client) => {
+          const type = clientBadge(client);
+          return (
+            <li key={client._id}>
+              <button type="button" onClick={() => onOpen(client)} className="flex w-full items-center gap-3 border-0 bg-transparent px-4 py-3 text-left">
+                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${CLIENT_AVATAR_COLORS[type]}`}>{clientInitials(client)}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[13px] font-semibold">{`${client.first_name || ''} ${client.last_name || ''}`.trim()}</div>
+                  <div className="truncate text-[12px] text-slate-400">{client.phone || client.email || '—'}</div>
+                  <div className="text-[12px] text-slate-500">{t('Séjours')} : {client.reservations_count ?? 0} · {formatMoney(client.total_spent)}</div>
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${CLIENT_BADGE_CLASSES[type]}`}>{t(type)}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[860px] text-left text-[13px]">
           <thead>
             <tr className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">

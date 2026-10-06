@@ -38,6 +38,9 @@ const ROOM_BLOCK = {
   cleaning: { kind: 'cleaning', title: 'Nettoyage', subtitle: 'En attente' },
   maintenance: { kind: 'maintenance', title: 'Indisponible', subtitle: 'Maintenance' },
   blocked: { kind: 'blocked', title: 'Bloquée', subtitle: '' },
+  // Client toujours en chambre alors que sa date de départ est passée (aucune barre ne couvre aujourd'hui)
+  occupied: { kind: 'occupied', title: 'Occupée', subtitle: 'Départ dépassé' },
+  reserved: { kind: 'reserved', title: 'Réservée', subtitle: '' },
 };
 
 const WEEK = [7, 14, 30];

@@ -33,6 +33,9 @@ const reservationBrief = (r) => r && ({
 const roomIdsOf = (r) => [...new Set([String(r.room_id), ...(r.rooms || []).map((l) => String(l.room_id))])];
 
 // Associe à chaque chambre son occupant / sa prochaine réservation à une date donnée.
+// Tri naturel des numéros de chambre : 8, 9, 101… (et non 101, 102… 8, 9).
+const byRoomNumber = (a, b) => String(a.room_number).localeCompare(String(b.room_number), 'fr', { numeric: true });
+
 const buildOccupancy = async (rooms, dateInput) => {
   const date = toDay(dateInput || new Date());
   const ids = rooms.map((r) => r._id);
@@ -88,6 +91,7 @@ const shape = (room, occ) => {
 
 const roomService = {
   buildOccupancy,
+  byRoomNumber,
 
   async getAllRooms(query = {}) {
     const filter = {};
@@ -98,7 +102,7 @@ const roomService = {
     if (query.search) filter.room_number = new RegExp(escapeRegex(query.search.trim()), 'i');
 
     const { page, limit, skip } = parsePagination(query, { page: 1, limit: 100, max: 500 });
-    const all = await Room.find(filter).populate('room_type_id').sort({ room_number: 1 });
+    const all = (await Room.find(filter).populate('room_type_id')).sort(byRoomNumber);
     const occ = await buildOccupancy(all, query.date);
     let shaped = all.map((r) => shape(r, occ));
     if (query.status) {

@@ -64,7 +64,7 @@ const InvoiceDetailsPage = () => {
         <div className="space-y-4 lg:col-span-2">
           <Card padded={false}>
             <div className="grid gap-4 border-b border-slate-100 p-5 sm:grid-cols-2">
-              <div><p className="m-0 text-xs uppercase text-slate-500">{t('Émetteur')}</p><p className="m-0 font-semibold text-slate-800">{settings?.name}</p><p className="m-0 text-sm text-slate-500">{settings?.address}</p><p className="m-0 text-sm text-slate-500">{[settings?.phone, settings?.email].filter(Boolean).join(' · ')}</p></div>
+              <div><p className="m-0 text-xs uppercase text-slate-500">{t('Émetteur')}</p><p className="m-0 font-semibold text-slate-800">{settings?.name}</p><p className="m-0 text-sm text-slate-500">{settings?.address}</p><p className="m-0 text-sm text-slate-500">{[settings?.phone, settings?.email].filter(Boolean).join(' · ')}</p>{(settings?.ninea || settings?.rccm) && <p className="m-0 text-sm text-slate-500">{[settings.ninea && `NINEA : ${settings.ninea}`, settings.rccm && `RCCM : ${settings.rccm}`].filter(Boolean).join(' · ')}</p>}</div>
               <div><p className="m-0 text-xs uppercase text-slate-500">{t('Facturé à')}</p><p className="m-0 font-semibold text-slate-800">{fullName(inv.client)}</p><p className="m-0 text-sm text-slate-500">{inv.client?.company}</p><p className="m-0 text-sm text-slate-500">{[inv.client?.phone, inv.client?.email].filter(Boolean).join(' · ')}</p></div>
             </div>
             <Table className="border-0 rounded-none" rowKey="_id" data={inv.items || []} emptyMessage={t('Aucune ligne')} columns={[

@@ -2,6 +2,7 @@ const { Room, Reservation } = require('../models');
 const AppError = require('../utils/AppError');
 const { toDay, addDays, ymd } = require('../utils/dates');
 const roomService = require('./roomService');
+const { byRoomNumber } = roomService;
 
 const planningService = {
   // Planning des chambres sur 7 à 30 jours (CDC §Planning)
@@ -13,7 +14,7 @@ const planningService = {
 
     const roomFilter = { is_active: { $ne: false } };
     if (query.room_type_id) roomFilter.room_type_id = query.room_type_id;
-    const rooms = await Room.find(roomFilter).populate('room_type_id').sort({ room_number: 1 });
+    const rooms = (await Room.find(roomFilter).populate('room_type_id')).sort(byRoomNumber);
     const occ = await roomService.buildOccupancy(rooms);
 
     const reservations = await Reservation.find({
