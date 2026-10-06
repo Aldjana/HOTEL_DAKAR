@@ -49,6 +49,12 @@ const ensureDefaults = async () => {
     await RoomType.insertMany(DEFAULT_ROOM_TYPES.map((t) => ({ ...t, is_active: true })));
   }
   if (!(await HotelSettings.findOne())) await HotelSettings.create({});
+  // Réparation : un libellé enregistré avec un mauvais encodage (ex. « Esp\uFFFDces ») reprend le libellé par défaut.
+  for (const [Model, defaults] of [[PaymentMode, DEFAULT_PAYMENT_MODES], [ReservationSource, DEFAULT_SOURCES]]) {
+    for (const d of defaults) {
+      await Model.updateOne({ code: d.code, name: /\uFFFD/ }, { $set: { name: d.name } });
+    }
+  }
 };
 
 module.exports = { ensureDefaults, DEFAULT_PAYMENT_MODES, DEFAULT_SOURCES, DEFAULT_ROOM_TYPES };
