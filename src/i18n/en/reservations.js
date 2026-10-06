@@ -284,4 +284,5 @@ export default {
   'Aucune action enregistrée': 'No actions recorded',
   ' • par {user}': ' • by {user}',
   'Rempli depuis la fiche client': 'Filled from the client record',
+  'Départ dépassé': 'Overdue departure',
 };
