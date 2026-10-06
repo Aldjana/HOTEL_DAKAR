@@ -46,6 +46,8 @@ const housekeepingService = {
   },
 
   async getAllTasks(query = {}) {
+    // Une chambre en maintenance sans tâche (ex. statut changé avant cette règle) reçoit la sienne.
+    if (!query.task_type || query.task_type === 'maintenance') await roomService.ensureMaintenanceTasks();
     const { page, limit, skip } = parsePagination(query, { page: 1, limit: 50, max: 200 });
     const filter = {};
     for (const k of ['status', 'room_id', 'assigned_to', 'task_type', 'priority']) if (query[k]) filter[k] = query[k];
@@ -130,6 +132,7 @@ const housekeepingService = {
   },
 
   async getTaskStatistics() {
+    await roomService.ensureMaintenanceTasks();
     const [pending, inProgress, completed, skipped, total] = await Promise.all([
       HousekeepingTask.countDocuments({ status: 'pending' }),
       HousekeepingTask.countDocuments({ status: 'in_progress' }),
