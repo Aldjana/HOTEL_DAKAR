@@ -1,4 +1,4 @@
-const { Room, RoomType, Reservation } = require('../models');
+const { Room, RoomType, Reservation, HousekeepingTask } = require('../models');
 const AppError = require('../utils/AppError');
 const { parsePagination, escapeRegex } = require('../utils/pagination');
 const { toDay, today, ymd } = require('../utils/dates');
@@ -33,6 +33,20 @@ const reservationBrief = (r) => r && ({
 const roomIdsOf = (r) => [...new Set([String(r.room_id), ...(r.rooms || []).map((l) => String(l.room_id))])];
 
 // Associe à chaque chambre son occupant / sa prochaine réservation à une date donnée.
+// Une chambre en maintenance a toujours une tâche de maintenance ouverte (visible dans Ménage) ;
+// quand elle sort de maintenance, ses tâches de maintenance ouvertes sont clôturées.
+const OPEN_TASK = ['pending', 'in_progress'];
+const syncMaintenanceTask = async (room) => {
+  const filter = { room_id: room._id, task_type: 'maintenance', status: { $in: OPEN_TASK } };
+  if (room.status === 'maintenance') {
+    if (!(await HousekeepingTask.exists(filter))) {
+      await HousekeepingTask.create({ room_id: room._id, task_type: 'maintenance', priority: 'high', status: 'pending', scheduled_date: new Date(), notes: 'Chambre mise en maintenance' });
+    }
+  } else {
+    await HousekeepingTask.updateMany(filter, { $set: { status: 'completed', completed_at: new Date() } });
+  }
+};
+
 // Tri naturel des numéros de chambre : 8, 9, 101… (et non 101, 102… 8, 9).
 const byRoomNumber = (a, b) => String(a.room_number).localeCompare(String(b.room_number), 'fr', { numeric: true });
 
@@ -93,6 +107,12 @@ const roomService = {
   buildOccupancy,
   byRoomNumber,
 
+  // Démarrage : crée la tâche manquante pour les chambres déjà en maintenance.
+  async ensureMaintenanceTasks() {
+    const rooms = await Room.find({ status: 'maintenance' });
+    for (const room of rooms) await syncMaintenanceTask(room);
+  },
+
   async getAllRooms(query = {}) {
     const filter = {};
     if (query.room_type_id) filter.room_type_id = query.room_type_id;
@@ -147,6 +167,7 @@ const roomService = {
       image_url: assertImageUrl(data.image_url),
       notes: data.notes,
     });
+    if (room.status === 'maintenance') await syncMaintenanceTask(room);
     return this.getRoomById(room._id);
   },
 
@@ -217,8 +238,10 @@ const roomService = {
     if (inHouse && status !== 'cleaning') {
       throw AppError.conflict(`La chambre ${room.room_number} est occupée (${inHouse.reservation_number}) : effectuez d'abord le check-out`);
     }
+    const wasMaintenance = room.status === 'maintenance';
     room.status = status;
     await room.save();
+    if (wasMaintenance || status === 'maintenance') await syncMaintenanceTask(room);
     let affected = 0;
     if (LOCKED.includes(status)) {
       affected = await Reservation.countDocuments({ $or: [{ room_id: id }, { 'rooms.room_id': id }], status: { $in: ['pending', 'confirmed'] }, departure_date: { $gt: today() } });

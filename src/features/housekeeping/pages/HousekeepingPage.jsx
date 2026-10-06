@@ -59,7 +59,7 @@ const HousekeepingPage = () => {
         <HousekeepingStatsCard label={t('Total à faire')} value={pad(stats ? stats.pending + stats.inProgress : null)} unit={t('Tâches')} color="text-slate-900" />
         <HousekeepingStatsCard label={t('En cours')} value={pad(stats?.inProgress)} unit={t('Tâches')} color="text-slate-900" />
         <HousekeepingStatsCard label={t('Prêtes')} value={pad(stats?.rooms.ready)} unit={t('Chambres')} color="text-[#0f9f6e]" borderClass="border-l-[#10B981]" />
-        <HousekeepingStatsCard label={t('Chambres en maintenance')} value={pad(maintRooms)} unit={t('Chambres')} color="text-red-500" borderClass="border-l-red-500" />
+        <HousekeepingStatsCard label={t('Chambres en maintenance')} value={pad(maintRooms)} unit={t('Chambres')} color="text-red-500" borderClass="border-l-red-500" onClick={() => setTab('maintenance')} />
       </div>
 
       <div className="flex flex-wrap items-start justify-between gap-2">
