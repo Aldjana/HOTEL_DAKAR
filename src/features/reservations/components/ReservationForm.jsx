@@ -11,6 +11,7 @@ import { usePaymentMethods, useReservationSources } from '../../../hooks/useRefe
 import { addDaysStr, formatMoney, fullName, nightsBetween, todayStr, toInputDate } from '../../../utils/format';
 import { CLIENT_TYPE_LABELS } from '../../../constants/status';
 import ClientPicker from './ClientPicker';
+import { ROOM_FALLBACK_IMAGES, roomImage } from '../../rooms/constants/roomsData';
 import { getLocale, useT } from '../../../i18n';
 
 
@@ -164,6 +165,9 @@ const ReservationForm = ({ reservation = null, initial = {} }) => {
   const roomLabel = selected.length
     ? `${[...new Set(selected.map((x) => knownRooms[x.room_id]?.type?.name).filter(Boolean))].join(' / ')} #${selected.map((x) => knownRooms[x.room_id]?.room_number || '…').join(', ')}`.trim()
     : '—';
+  // Photo de la (première) chambre choisie, comme sur la page Chambres
+  const firstRoom = selected.length ? knownRooms[selected[0].room_id] : null;
+  const summaryImage = firstRoom ? roomImage(firstRoom) : ROOM_FALLBACK_IMAGES.available;
   const categoryLabel = [...new Set(selected.map((x) => knownRooms[x.room_id]?.type?.name).filter(Boolean))].join(' / ') || '—';
   const paidAlready = editing ? Number(reservation.paid_amount) || 0 : (advance ? Number(payment.amount) || 0 : 0);
   const balance = estimate.total - paidAlready;
@@ -424,8 +428,9 @@ const ReservationForm = ({ reservation = null, initial = {} }) => {
           </div>
           <div className="mt-5 overflow-hidden rounded-xl">
             <img
-              src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80"
-              alt={t('Chambre')}
+              key={summaryImage}
+              src={summaryImage}
+              alt={firstRoom ? t('Chambre {n}', { n: firstRoom.room_number }) : t('Chambre')}
               className="h-36 w-full object-cover"
               onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
             />
