@@ -7,6 +7,8 @@ const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
   headers: { 'Content-Type': 'application/json' },
+  // Envoie le cookie httpOnly du jeton de renouvellement (utile en développement : site et API sur deux ports).
+  withCredentials: true,
 });
 
 // Événement émis quand la session est définitivement perdue (refresh impossible) :
@@ -25,14 +27,17 @@ apiClient.interceptors.request.use((config) => {
 let refreshPromise = null;
 const refreshSession = () => {
   if (!refreshPromise) {
-    const refreshToken = tokens.getRefresh();
-    if (!refreshToken) return Promise.reject(new Error('NO_REFRESH_TOKEN'));
+    // Le jeton de renouvellement voyage dans le cookie httpOnly. Une ancienne session (jeton encore en
+    // stockage local) l'envoie une dernière fois pour être migrée vers le cookie, puis il est effacé.
+    const legacy = tokens.getLegacyRefresh();
+    const body = { use_cookie: true, remember: tokens.getRemember(), ...(legacy ? { refresh_token: legacy } : {}) };
     refreshPromise = axios
-      .post(`${API_CONFIG.BASE_URL}/auth/refresh-token`, { refresh_token: refreshToken }, { timeout: API_CONFIG.TIMEOUT })
+      .post(`${API_CONFIG.BASE_URL}/auth/refresh-token`, body, { timeout: API_CONFIG.TIMEOUT, withCredentials: true })
       .then((res) => {
         const d = res.data?.data || {};
         if (!d.token) throw new Error('REFRESH_BAD_RESPONSE');
-        tokens.set({ token: d.token, refreshToken: d.refreshToken, user: d.user });
+        tokens.clearLegacyRefresh();
+        tokens.set({ token: d.token, user: d.user });
         return d.token;
       })
       .finally(() => { refreshPromise = null; });
@@ -56,7 +61,8 @@ apiClient.interceptors.response.use(
         // Seule une réponse explicite du serveur (401/403) met fin à la session ;
         // une panne réseau ne doit jamais déconnecter l'utilisateur.
         const s = refreshError.response?.status;
-        if (refreshError.message === 'NO_REFRESH_TOKEN' || s === 401 || s === 403) {
+        // 400 : aucun cookie de renouvellement (session expirée ou déconnectée)
+        if (s === 400 || s === 401 || s === 403) {
           tokens.clear();
           window.dispatchEvent(new CustomEvent(AUTH_LOST_EVENT, { detail: refreshError.response?.data?.message }));
         }

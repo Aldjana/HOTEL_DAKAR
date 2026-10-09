@@ -36,7 +36,7 @@ const loginValidation = [
 
 const refreshTokenValidation = [
   body('refresh_token').custom((v, { req }) => {
-    if (!v && !req.body.refreshToken) throw new Error('Le token de rafraîchissement est requis');
+    if (!v && !req.body.refreshToken && !require('../utils/refreshCookie').read(req)) throw new Error('Le token de rafraîchissement est requis');
     return true;
   }),
 ];

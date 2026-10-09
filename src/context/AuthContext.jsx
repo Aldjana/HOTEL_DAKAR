@@ -50,8 +50,8 @@ export const AuthProvider = ({ children }) => {
   }, [clearSession]);
 
   const login = useCallback(async (email, password) => {
-    const data = await authApi.login(email, password);
-    tokens.set({ token: data.token, refreshToken: data.refreshToken, user: data.user });
+    const data = await authApi.login(email, password, tokens.getRemember());
+    tokens.set({ token: data.token, user: data.user });
     setSessionMessage('');
     setUser(data.user);
     return data.user;

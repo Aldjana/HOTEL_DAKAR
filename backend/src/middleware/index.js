@@ -1,6 +1,6 @@
 const { auth, optionalAuth, authorize, requirePermission } = require('./auth');
 const { errorHandler, notFound } = require('./errorHandler');
-const { rateLimiter, authRateLimiter } = require('./rateLimiter');
+const { rateLimiter, authRateLimiter, loginAccountLimiter } = require('./rateLimiter');
 const validate = require('./validate');
 
 module.exports = {
@@ -12,5 +12,6 @@ module.exports = {
   notFound,
   rateLimiter,
   authRateLimiter,
+  loginAccountLimiter,
   validate,
 };
