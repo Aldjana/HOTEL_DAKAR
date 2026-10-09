@@ -8,7 +8,10 @@ const { errorHandler, notFound } = require('./middleware');
 const logger = require('./config/logger');
 
 const app = express();
-app.set('trust proxy', 1);
+// Nombre de proxys de confiance devant l'API, pour retrouver la vraie IP du client (limitation de débit).
+// Production : Vercel (relais /api) puis le répartiteur de Render = 2. Modifiable via TRUST_PROXY.
+const trustProxy = process.env.TRUST_PROXY !== undefined ? Number(process.env.TRUST_PROXY) : (config.app.env === 'production' ? 2 : 1);
+app.set('trust proxy', trustProxy);
 
 // Middleware de sécurité
 app.use(helmet());

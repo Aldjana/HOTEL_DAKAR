@@ -4,11 +4,15 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://hotel-dakar.onrender.com/api/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
   "env": {
-    "VITE_API_BASE_URL": "https://hotel-dakar.onrender.com/api/v1"
+    "VITE_API_BASE_URL": "/api/v1"
   }
 }

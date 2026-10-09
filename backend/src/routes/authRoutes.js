@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const { auth, requirePermission, authRateLimiter } = require('../middleware');
+const { auth, requirePermission, authRateLimiter, loginAccountLimiter } = require('../middleware');
 const validators = require('../validators');
 
-router.post('/login', authRateLimiter, validators.auth.loginValidation, authController.login);
+router.post('/login', authRateLimiter, loginAccountLimiter, validators.auth.loginValidation, authController.login);
 router.post('/refresh-token', authRateLimiter, validators.auth.refreshTokenValidation, authController.refreshToken);
 router.post('/logout', auth, authController.logout);
 router.get('/me', auth, authController.getMe);

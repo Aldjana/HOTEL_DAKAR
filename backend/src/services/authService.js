@@ -11,8 +11,8 @@ const signAccess = (user) => jwt.sign(
   config.jwt.secret,
   { expiresIn: config.jwt.expiresIn }
 );
-const signRefresh = (user) => jwt.sign(
-  { id: user._id, tv: user.token_version || 0, type: 'refresh' },
+const signRefresh = (user, remember = true) => jwt.sign(
+  { id: user._id, tv: user.token_version || 0, type: 'refresh', rm: !!remember },
   config.jwt.refreshSecret,
   { expiresIn: config.jwt.refreshExpiresIn }
 );
@@ -47,7 +47,7 @@ const authService = {
     return publicUser(user);
   },
 
-  async login(email, password) {
+  async login(email, password, { remember = true } = {}) {
     const user = await User.findOne({ email: String(email || '').toLowerCase().trim() });
     // Même message que le mot de passe faux, pour ne pas révéler l'existence du compte.
     if (!user || !(await comparePassword(password || '', user.password_hash))) {
@@ -59,7 +59,7 @@ const authService = {
     user.login_count = (user.login_count || 0) + 1;
     await user.save();
 
-    return { user: publicUser(user), token: signAccess(user), refreshToken: signRefresh(user) };
+    return { user: publicUser(user), token: signAccess(user), refreshToken: signRefresh(user, remember), remember: !!remember };
   },
 
   async refreshToken(refreshToken) {
@@ -74,15 +74,16 @@ const authService = {
     const user = await User.findById(decoded.id);
     if (!user || !user.is_active) throw AppError.unauthorized('Compte introuvable ou désactivé', 'USER_INACTIVE');
     if ((decoded.tv || 0) !== (user.token_version || 0)) throw AppError.unauthorized('Session révoquée, veuillez vous reconnecter', 'TOKEN_REVOKED');
-    // Rotation : nouveau couple de jetons.
-    return { token: signAccess(user), refreshToken: signRefresh(user), user: publicUser(user) };
+    // Rotation : nouveau couple de jetons (la préférence « se souvenir de moi » est conservée).
+    const remember = decoded.rm !== false;
+    return { token: signAccess(user), refreshToken: signRefresh(user, remember), user: publicUser(user), remember };
   },
 
   async logout(userId) {
     await User.updateOne({ _id: userId }, { $inc: { token_version: 1 } });
   },
 
-  async changePassword(userId, currentPassword, newPassword) {
+  async changePassword(userId, currentPassword, newPassword, { remember = true } = {}) {
     const user = await User.findById(userId);
     if (!user) throw AppError.notFound('Utilisateur non trouvé');
     if (!(await comparePassword(currentPassword || '', user.password_hash))) {
@@ -92,7 +93,7 @@ const authService = {
     user.password_hash = await hashPassword(newPassword);
     user.token_version = (user.token_version || 0) + 1;
     await user.save();
-    return { token: signAccess(user), refreshToken: signRefresh(user) };
+    return { token: signAccess(user), refreshToken: signRefresh(user, remember), remember: !!remember };
   },
 
   async getUserById(id) {

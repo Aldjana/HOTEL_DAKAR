@@ -75,8 +75,8 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     if (form.new_password !== form.confirm) return setError(t('Les deux mots de passe ne correspondent pas'));
     setSaving(true);
     try {
-      const t = await authApi.changePassword({ current_password: form.current_password, new_password: form.new_password });
-      tokens.set({ token: t.token, refreshToken: t.refreshToken });
+      const res = await authApi.changePassword({ current_password: form.current_password, new_password: form.new_password });
+      tokens.set({ token: res.token });
       toast.success(t('Mot de passe modifié'));
       setForm({ current_password: '', new_password: '', confirm: '' });
       onClose();
