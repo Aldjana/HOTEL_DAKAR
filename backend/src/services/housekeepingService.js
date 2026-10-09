@@ -138,8 +138,9 @@ const housekeepingService = {
   async getTaskStatistics() {
     await syncMaintenance();
     const [pending, inProgress, completed, skipped, total] = await Promise.all([
-      HousekeepingTask.countDocuments({ status: 'pending' }),
-      HousekeepingTask.countDocuments({ status: 'in_progress' }),
+      // Nettoyage uniquement : les tâches de maintenance ont leur propre compteur (onglet Maintenance)
+      HousekeepingTask.countDocuments({ status: 'pending', task_type: { $ne: 'maintenance' } }),
+      HousekeepingTask.countDocuments({ status: 'in_progress', task_type: { $ne: 'maintenance' } }),
       HousekeepingTask.countDocuments({ status: 'completed' }),
       HousekeepingTask.countDocuments({ status: 'skipped' }),
       HousekeepingTask.countDocuments(),

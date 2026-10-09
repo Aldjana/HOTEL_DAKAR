@@ -1,10 +1,10 @@
-import { BadgeCheck, Clock, TriangleAlert, User } from 'lucide-react';
+import { Broom, CircleCheck, CircleEllipsis, Wrench } from 'lucide-react';
 
 const ICON_MAP = {
-  User,
-  Clock,
-  BadgeCheck,
-  TriangleAlert,
+  Broom,
+  CircleEllipsis,
+  CircleCheck,
+  Wrench,
 };
 
 const HousekeepingTabs = ({ tabs, activeTab, onTabChange }) => {
